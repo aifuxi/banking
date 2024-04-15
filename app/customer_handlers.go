@@ -3,18 +3,11 @@ package app
 import (
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"github.com/aifuxi/banking/service"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 )
-
-type Customer struct {
-	Name    string `json:"name" xml:"name"`
-	City    string `json:"city" xml:"city"`
-	ZipCode string `json:"zipCode" xml:"zipCode"`
-}
 
 type CustomerHandlers struct {
 	service service.CustomerService
@@ -46,14 +39,18 @@ func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) 
 
 	customer, err := ch.service.GetCustomer(id)
 	if err != nil {
-		w.WriteHeader(err.Code)
-		fmt.Fprintf(w, err.Message)
-		return
+		writeResponse(w, err.Code, err.AsMessage())
+	} else {
+		writeResponse(w, http.StatusOK, customer)
 	}
 
-	// add content type header
-	w.Header().Add("Content-Type", "application/json")
-	// customers -> response
-	json.NewEncoder(w).Encode(customer)
+}
 
+func writeResponse(w http.ResponseWriter, code int, data any) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(code)
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Fatalln(err)
+	}
 }
