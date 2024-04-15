@@ -3,7 +3,10 @@ package app
 import (
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"github.com/aifuxi/banking/service"
+	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 )
 
@@ -32,5 +35,25 @@ func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Reque
 		// customers -> response
 		json.NewEncoder(w).Encode(customers)
 	}
+
+}
+
+func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["customer_id"]
+
+	log.Printf("customer_id from path: %v\n", id)
+
+	customer, err := ch.service.GetCustomer(id)
+	if err != nil {
+		w.WriteHeader(err.Code)
+		fmt.Fprintf(w, err.Message)
+		return
+	}
+
+	// add content type header
+	w.Header().Add("Content-Type", "application/json")
+	// customers -> response
+	json.NewEncoder(w).Encode(customer)
 
 }

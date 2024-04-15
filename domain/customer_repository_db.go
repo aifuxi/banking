@@ -2,6 +2,8 @@ package domain
 
 import (
 	"database/sql"
+	"errors"
+	"github.com/aifuxi/banking/errs"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"time"
@@ -18,6 +20,7 @@ func (d CustomerRepositoryDb) FindAll() ([]Customer, error) {
 	rows, err := d.client.Query(findAllSql)
 	if err != nil {
 		log.Println("error while querying customers ", err.Error())
+		return nil, err
 	}
 	customers := make([]Customer, 0)
 
@@ -27,11 +30,34 @@ func (d CustomerRepositoryDb) FindAll() ([]Customer, error) {
 		err := rows.Scan(&c.Id, &c.Name, &c.City, &c.Zipcode, &c.DateOfBirth, &c.Status)
 		if err != nil {
 			log.Println("error while scanning customers ", err.Error())
+			return nil, err
 		}
 		customers = append(customers, c)
 	}
 
 	return customers, nil
+}
+
+func (d CustomerRepositoryDb) ById(id string) (*Customer, *errs.AppErr) {
+
+	customerSql := "select customer_id, name, city, zipcode, date_of_birth, status from customers where customer_id = ?"
+
+	row := d.client.QueryRow(customerSql, id)
+
+	var c Customer
+
+	err := row.Scan(&c.Id, &c.Name, &c.City, &c.Zipcode, &c.DateOfBirth, &c.Status)
+	if err != nil {
+
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errs.NewNotFoundErr("Customer not found")
+		} else {
+			log.Println("error while scanning customers ", err.Error())
+			return nil, errs.NewUnexpectErr("Unexpect databases error")
+		}
+	}
+
+	return &c, nil
 }
 
 func NewCustomerRepositoryDb() CustomerRepositoryDb {
