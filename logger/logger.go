@@ -10,13 +10,16 @@ var log *zap.Logger
 func init() {
 	var err error
 
-	config := zap.NewProductionConfig()
-	encoderConfig := zap.NewProductionEncoderConfig()
+	config := zap.NewDevelopmentConfig()
+	encoderConfig := zap.NewDevelopmentEncoderConfig()
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.StacktraceKey = ""
 	config.EncoderConfig = encoderConfig
 
 	log, err = config.Build(zap.AddCallerSkip(1))
+	// set log level to debug
+	// can not set log level to debug in production
+	log.WithOptions(zap.IncreaseLevel(zapcore.DebugLevel))
 
 	if err != nil {
 		panic(err)
