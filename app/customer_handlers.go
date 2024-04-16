@@ -35,7 +35,7 @@ func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) 
 	vars := mux.Vars(r)
 	id := vars["customer_id"]
 
-	logger.Info("customer_id from path: %v\n" + id)
+	logger.Info("customer_id from path: " + id)
 
 	customer, err := ch.service.GetCustomer(id)
 	if err != nil {
