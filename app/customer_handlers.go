@@ -3,9 +3,9 @@ package app
 import (
 	"encoding/json"
 	"encoding/xml"
+	"github.com/aifuxi/banking/logger"
 	"github.com/aifuxi/banking/service"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 )
 
@@ -35,7 +35,7 @@ func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) 
 	vars := mux.Vars(r)
 	id := vars["customer_id"]
 
-	log.Printf("customer_id from path: %v\n", id)
+	logger.Info("customer_id from path: %v\n" + id)
 
 	customer, err := ch.service.GetCustomer(id)
 	if err != nil {
@@ -51,6 +51,6 @@ func writeResponse(w http.ResponseWriter, code int, data any) {
 	w.WriteHeader(code)
 
 	if err := json.NewEncoder(w).Encode(data); err != nil {
-		log.Fatalln(err)
+		logger.Error("json encode error: " + err.Error())
 	}
 }

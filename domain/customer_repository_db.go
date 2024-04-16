@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/aifuxi/banking/errs"
+	"github.com/aifuxi/banking/logger"
 	_ "github.com/go-sql-driver/mysql"
-	"log"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -19,7 +20,7 @@ func (d CustomerRepositoryDb) FindAll() ([]Customer, error) {
 
 	rows, err := d.client.Query(findAllSql)
 	if err != nil {
-		log.Println("error while querying customers ", err.Error())
+		logger.Error("error while querying customers ", zap.Field{Key: "error", String: err.Error()})
 		return nil, err
 	}
 	customers := make([]Customer, 0)
@@ -29,7 +30,7 @@ func (d CustomerRepositoryDb) FindAll() ([]Customer, error) {
 
 		err := rows.Scan(&c.Id, &c.Name, &c.City, &c.Zipcode, &c.DateOfBirth, &c.Status)
 		if err != nil {
-			log.Println("error while scanning customers ", err.Error())
+			logger.Info("error while scanning customers ", zap.Field{Key: "error", String: err.Error()})
 			return nil, err
 		}
 		customers = append(customers, c)
@@ -48,10 +49,10 @@ func (d CustomerRepositoryDb) ById(id string) (*Customer, *errs.AppErr) {
 	if err != nil {
 		// check query row error
 		if errors.Is(err, sql.ErrNoRows) {
-			log.Println("sql.ErrNoRows", sql.ErrNoRows)
+			logger.Error("sql.ErrNoRows" + sql.ErrNoRows.Error())
 			return nil, errs.NewNotFoundErr("Customer not found")
 		} else {
-			log.Println("error while scanning customers ", err.Error())
+			logger.Error("error while scanning customers " + err.Error())
 			return nil, errs.NewUnexpectErr("Unexpect databases error")
 		}
 	}
@@ -62,7 +63,7 @@ func (d CustomerRepositoryDb) ById(id string) (*Customer, *errs.AppErr) {
 func NewCustomerRepositoryDb() CustomerRepositoryDb {
 	client, err := sql.Open("mysql", "root:123456@/banking")
 	if err != nil {
-		log.Fatalln("sql open error: ", err)
+		logger.Error("sql open error: " + err.Error())
 	}
 	// See "Important settings" section.
 	client.SetConnMaxLifetime(time.Minute * 3)
