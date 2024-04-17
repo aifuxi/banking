@@ -9,11 +9,11 @@ import (
 	"net/http"
 )
 
-type CustomerHandlers struct {
+type CustomerHandler struct {
 	service service.CustomerService
 }
 
-func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Request) {
+func (ch *CustomerHandler) getAllCustomers(w http.ResponseWriter, r *http.Request) {
 	customers, _ := ch.service.GetAllCustomer()
 
 	// get  content type for request header
@@ -31,7 +31,7 @@ func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Reque
 
 }
 
-func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) {
+func (ch *CustomerHandler) getCustomer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["customer_id"]
 
